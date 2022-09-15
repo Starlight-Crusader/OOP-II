@@ -1,13 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct Node  {
 	int content;
 	struct Node *next;
 } Node;
 
-int input(Node *h, Node *t, int *n) {
-	int option = 0;
+typedef struct Queue {
+	Node *head, *tail;
+	int len;
+} Queue;
+
+int input();
+int printQueue();
+int deallocateMemory();
+
+int main() {
+	Queue q;
+	q.head = NULL; q.tail = NULL; q.len = 0;
+
+	q.len = input(&q.head, &q.tail);
+	printQueue(q.head, q.tail, q.len);
+	return 0;
+};
+
+int input(Node **h, Node **t) {
+	int option = 0; int n = 0;
 	Node *newNode;
 
 	printf("1. Manual input;\n");
@@ -20,31 +39,33 @@ int input(Node *h, Node *t, int *n) {
 		char input[256];
 
                 while(1) {
-                        printf("Type a number to be enqueued (OR 'S' to stop): ");
+                        printf("Type a number to be enqueued (OR 'S' to stop) (TOTAL = %i): ", n);
                         scanf("%s", &input);
 
-                        if(strcmp(input, "S")) {
-				if(*n == 0) {
+                        if(!strcmp(input, "S")) {
+				if(n == 0) {
 					printf("Input at leat 1 number...\n");
 					continue;
-				} else { break; }
+				} else {
+					return n;
+				}
                         } else {
-                                if(*n == 0) {
+                                if(n == 0) {
                                         newNode = (Node*)malloc(sizeof(Node));
-                                        newNode->content = input + 0;
+                                        newNode->content = atoi(input);
 
-                                        h = newNode;
-                                        t  = newNode;
+                                        *h = newNode;
+                                        *t  = newNode;
 
-					*n++;
+					n++;
                                 } else {
                                         newNode = (Node*)malloc(sizeof(Node));
-                                        newNode->content = input + 0;
+                                        newNode->content = atoi(input);
 
-                                        newNode->next = t;
-                                        t = newNode;
+                                        newNode->next = *t;
+                                        *t = newNode;
 
-					*n++;
+					n++;
                                 }
                         }
                 }
@@ -54,18 +75,18 @@ int input(Node *h, Node *t, int *n) {
 
 		input = fopen(nameOfFile, "r");
 
-		fscanf(input, "%i", *n);
+		fscanf(input, "%i", &n);
 
-		for(int i = 0; i < *n; i++) {
+		for(int i = 0; i < n; i++) {
 			if(i == 0) {
                         	newNode = (Node*)malloc(sizeof(Node));
-                                fscanf(input, "%i",  newNode->content);
+                                fscanf(input, "%i",  &newNode->content);
 
                                 h = newNode;
                                 t  = newNode;
                         } else {
                                 newNode = (Node*)malloc(sizeof(Node));
-                                fscanf(input, "%i",  newNode->content);
+                                fscanf(input, "%i",  &newNode->content);
 
                                 newNode->next = t;
                                 t = newNode;
@@ -73,17 +94,20 @@ int input(Node *h, Node *t, int *n) {
 		}
 
 		fclose(nameOfFile);
+
+		return n;
 	}
 
-	return 0;
+	return -1;
 };
 
-int printQueue(Node *h, Node *t, int *n) {
+int printQueue(Node *h, Node *t, int n) {
+	printf("%i: ", n);
 	printf("TAIL -> ");
 
 	Node *currentNode; currentNode = t;
 
-	for(int i = 1; i < *n; i++) {
+	for(int i = 1; i < n; i++) {
 		printf("%i - ", currentNode->content);
 		currentNode = currentNode->next;
 	}
@@ -94,29 +118,18 @@ int printQueue(Node *h, Node *t, int *n) {
 	return 0;
 };
 
-int deallocateMemory(Node *h, Node *t, int *n) {
+int deallocateMemory(Node *h, Node *t, int n) {
 	Node *nodeToDeallocate;
 	nodeToDeallocate = t;
 
-	for(int i = 1; i < *n; i++) {
+	for(int i = 1; i < n; i++) {
 		nodeToDeallocate = t;
 		t = t->next;
 
 		free(nodeToDeallocate);
 	}
 
-	free(h);
+	free(t);
 
 	return 0;
 };
-
-int main() {
-	int *n; *n = 0;
-        Node *head, *tail;
-
-	input(head, tail, n);
-	printQueue(head, tail, n);
-	deallocateMemory(head, tail, n);
-
-	return 0;
-}
