@@ -17,12 +17,35 @@ int printQueue();
 int deallocateMemory();
 
 int main() {
+	int option;
 	Queue q;
 	q.head = NULL; q.tail = NULL; q.len = 0;
 
-	q.len = input(&q.head, &q.tail);
-	printQueue(q.head, q.tail, q.len);
-	return 0;
+
+	while(1) {
+		printf("===================\n");
+		printf("Pick a procedure from the list below:\n");
+
+		printf("'1' - Create a new queue and enter some values;\n");
+		printf("'2' - Print all the values from the queue;\n");
+		printf("'3' - Clear the queue;\n");
+		printf("'4' - Stop the program (the memory will be automatically deallocated)\n");
+
+		scanf("%i", &option);
+
+		switch(option) {
+			case 1: q.len = input(&q.head, &q.tail); break;
+			case 2: printQueue(q.head, q.tail, q.len); break;
+			case 3:
+				deallocateMemory(q.head, q.tail, q.len);
+				q.head = NULL; q.tail = NULL; q.len = 0;
+				break; 
+			case 4: deallocateMemory(q.head, q.tail, q.len);
+                                q.head = NULL; q.tail = NULL; q.len = 0;
+                                return 0;
+			default: printf("This option is probably not in the list ..."); break;
+		}
+	}
 };
 
 int input(Node **h, Node **t) {
@@ -43,12 +66,7 @@ int input(Node **h, Node **t) {
                         scanf("%s", &input);
 
                         if(!strcmp(input, "S")) {
-				if(n == 0) {
-					printf("Input at leat 1 number...\n");
-					continue;
-				} else {
-					return n;
-				}
+				return n;
                         } else {
                                 if(n == 0) {
                                         newNode = (Node*)malloc(sizeof(Node));
@@ -73,35 +91,54 @@ int input(Node **h, Node **t) {
 		FILE *input;
 		char nameOfFile[256];
 
-		input = fopen(nameOfFile, "r");
+		while(1) {
+			printf("Enter the name of file (OR 'ABORT' to abort input procedure): ");
+                	scanf("%s", &nameOfFile);
+
+			if(!strcmp(nameOfFile, "ABORT")) {
+				return 0;
+			} else {
+				input = fopen(nameOfFile, "r");
+
+                        	if(input == NULL) {
+                                	printf("Unable to find a file with such a name :( ...\n");
+                        	} else {
+                                	break;
+                        	}
+			}
+		}
 
 		fscanf(input, "%i", &n);
+		printf("%i\n", n);
 
 		for(int i = 0; i < n; i++) {
 			if(i == 0) {
                         	newNode = (Node*)malloc(sizeof(Node));
                                 fscanf(input, "%i",  &newNode->content);
 
-                                h = newNode;
-                                t  = newNode;
+                                *h = newNode;
+                                *t  = newNode;
                         } else {
                                 newNode = (Node*)malloc(sizeof(Node));
                                 fscanf(input, "%i",  &newNode->content);
 
-                                newNode->next = t;
-                                t = newNode;
+                                newNode->next = *t;
+                                *t = newNode;
                         }
 		}
 
-		fclose(nameOfFile);
+		fclose(input);
 
 		return n;
 	}
-
-	return -1;
 };
 
 int printQueue(Node *h, Node *t, int n) {
+	if(n == 0) {
+		printf("Queue is empty!\n");
+		return -1;
+	}
+
 	printf("%i: ", n);
 	printf("TAIL -> ");
 
@@ -119,6 +156,11 @@ int printQueue(Node *h, Node *t, int n) {
 };
 
 int deallocateMemory(Node *h, Node *t, int n) {
+	if(n == 0) {
+                printf("Queue is empty!\n");
+                return -1;
+        }
+
 	Node *nodeToDeallocate;
 	nodeToDeallocate = t;
 
