@@ -33,7 +33,8 @@ int main() {
 		printf("'2' - Print all the values from the queue;\n");
 		printf("'3' - Clear the queue;\n");
 		printf("'4' - Save the queue to a file;\n");
-		printf("'5' - Quit without saving (the memory will be automatically deallocated)\n");
+		printf("'5' - Add a value to an existing queue;\n");
+		printf("'0' - Quit without saving (the memory will be automatically deallocated)\n");
 
 		scanf("%i", &option);
 
@@ -44,10 +45,9 @@ int main() {
 				deallocateMemory(q.head, q.tail, q.len);
 				q.head = NULL; q.tail = NULL; q.len = 0;
 				break;
-			case 4:
-				saveToFile(q.head, q.tail, q.len);
-				break;
-			case 5: deallocateMemory(q.head, q.tail, q.len);
+			case 4: saveToFile(q.head, q.tail, q.len); break;
+			case 5: q.len = enq(&q.tail, q.len); break;
+			case 0: deallocateMemory(q.head, q.tail, q.len);
                                 q.head = NULL; q.tail = NULL; q.len = 0;
                                 return 0;
 			default: printf("This option is probably not in the list ..."); break;
@@ -57,15 +57,15 @@ int main() {
 
 int input(Node **h, Node **t, int l) {
 	if(l > 0) {
-		printf("You've already created a queue, dellocatre memory in order to create a new one ...");
+		printf("ABORT: You've already created a queue, dellocatre memory in order to create a new one ...");
 		return l;
 	}
 
 	int option = 0; int n = 0;
 	Node *newNode;
 
-	printf("1. Manual input;\n");
-        printf("2. Input from a file\n");
+	printf("'1' Manual input;\n");
+        printf("'2' Input from a file\n");
         printf("? - ");
 
         scanf("%i", &option);
@@ -147,7 +147,7 @@ int input(Node **h, Node **t, int l) {
 
 int printQueue(Node *h, Node *t, int n) {
 	if(n <= 0) {
-		printf("Queue is empty - unable to print!\n");
+		printf("ABORT: Queue is empty - unable to print!\n");
 		return 0;
 	}
 
@@ -169,7 +169,7 @@ int printQueue(Node *h, Node *t, int n) {
 
 int deallocateMemory(Node *h, Node *t, int n) {
 	if(n <= 0) {
-                printf("Queue is empty - unable to deallocate memory!\n");
+                printf("ABORT: Queue is empty - unable to deallocate memory!\n");
                 return 0;
         }
 
@@ -188,7 +188,7 @@ int deallocateMemory(Node *h, Node *t, int n) {
 
 int saveToFile(Node *h, Node *t, int n) {
 	if(n <= 0) {
-		printf("Queue is empty - unable to save it in a file!\n");
+		printf("ABORT: Queue is empty - unable to save it in a file!\n");
 		return 0;
 	}
 
@@ -231,17 +231,33 @@ int saveToFile(Node *h, Node *t, int n) {
 
 int enq(Node **t, int n) {
 	if(n <= 0) {
-		printf("First of all you have to create a new queue!");
+		printf("ABORT: First of all you have to create a new queue!");
 		return 0;
 	}
 
 	Node *newNode = (Node*)malloc(sizeof(Node));
 
 	printf("Print a value to add in the queue: ");
-	scanf("%i", newNode->content);
+	scanf("%i", &newNode->content);
 
 	newNode->next = *t;
 	*t = newNode;
 
 	return n+1;
-}
+};
+
+int deq(Node *t, Node **h, int n) {
+	if(n <= 0) {
+                printf("ABORT: First of all you have to create a new queue!");
+                return 0;
+        }
+
+	int storedVal;
+
+	Node *currentNode;
+	currentNode = t;
+
+	for(int i = 0; i < n - 2; i++) {
+		currentNode = currentNode->next;
+	}
+};
