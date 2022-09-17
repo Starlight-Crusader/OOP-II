@@ -19,6 +19,7 @@ int saveToFile();
 int enq();
 int deq();
 int search();
+int sort();
 
 int main() {
 	int option;
@@ -37,12 +38,15 @@ int main() {
 		printf("'5' - Add a value to an existing queue;\n");
 		printf("'6' - Dequeue the heading element;\n");
 		printf("'7' - Search;\n");
+		printf("'8' - Sort;\n");
+		printf("'-1' - Clear the terminal;\n");
 		printf("'0' - Quit without saving (the memory will be automatically deallocated)\n");
 
-		printf("INPUT: ");
+		printf("OPTION: ");
 		scanf("%i", &option);
 
 		switch(option) {
+			case -1: system("clear"); break;
 			case 1: q.len = input(&q.head, &q.tail, q.len); break;
 			case 2: printQueue(q.head, q.tail, q.len); break;
 			case 3:
@@ -60,6 +64,7 @@ int main() {
 				}
 				break;
 			case 7: search(q.head, q.tail, q.len); break;
+			case 8: sort(q.tail, q.len); break;
 			case 0: deallocateMemory(q.head, q.tail, q.len);
                                 q.head = NULL; q.tail = NULL; q.len = 0;
                                 return 0;
@@ -81,6 +86,7 @@ int input(Node **h, Node **t, int l) {
         printf("'2' - Input from a file\n");
         printf("? - ");
 
+	printf("OPTION: ");
         scanf("%i", &option);
 
         if(option == 1) {
@@ -307,6 +313,7 @@ int search(Node *h, Node *t, int n) {
 	printf("'2' - Find indexes by value;\n");
 	printf("'0' - Abort this operation\n");
 
+	printf("OPTION: ");
 	scanf("%i", &opt);
 
 	switch(opt) {
@@ -355,6 +362,62 @@ int search(Node *h, Node *t, int n) {
 			}
 		case 0:
 			return 0;
+		default:
+			printf("This option is probably not in the list ...\n"); return 0;
+	}
+};
+
+int sort(Node *t, int n) {
+	if(n <= 0) {
+                printf("ABORT: Queue is empty!\n");
+                return 0;
+        }
+
+	int opt;
+	int res;
+	Node *currentNode;
+
+	printf("'1' - ASC;\n");
+	printf("'2' - DESC;\n");
+	printf("'0' - Abort this operation\n");
+
+	printf("OPTION: ");
+	scanf("%i", &opt);
+
+	switch(opt) {
+		case 1:
+			for(int i = 0; i < n-1; i++) {
+				currentNode = t;
+
+				for(int j = 0; j < n-i-1; j++) {
+					if(currentNode->content <= currentNode->next->content) {
+						res = currentNode->content;
+						currentNode->content = currentNode->next->content;
+						currentNode->next->content = res;
+					}
+
+					currentNode = currentNode->next;
+				}
+			}
+
+			return 0;
+		case 2:
+			for(int i = 0; i < n-1; i++) {
+				currentNode = t;
+
+                                for(int j = 0; j < n-i-1; j++) {
+                                        if(currentNode->content >= currentNode->next->content) { 
+                                                res = currentNode->content;
+                                                currentNode->content = currentNode->next->content;
+                                                currentNode->next->content = res;
+                                        }
+
+					currentNode = currentNode->next;
+                                }
+                        }
+
+                        return 0;
+		case 3: return 0;
 		default:
 			printf("This option is probably not in the list ...\n"); return 0;
 	}
