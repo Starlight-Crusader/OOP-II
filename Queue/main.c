@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 typedef struct Node  {
 	int content;
@@ -8,6 +9,7 @@ typedef struct Node  {
 } Node;
 
 typedef struct Queue {
+	bool pQ;
 	Node *head, *tail;
 	int len;
 } Queue;
@@ -20,11 +22,13 @@ int enq();
 int deq();
 int search();
 int sort();
+int reverse();
+int serveElementWithHPriority();
 
 int main() {
 	int option;
 	Queue q;
-	q.head = NULL; q.tail = NULL; q.len = 0;
+	q.head = NULL; q.tail = NULL; q.len = 0; q.pQ = false;
 
 
 	while(1) {
@@ -36,9 +40,11 @@ int main() {
 		printf("'3' - Clear the queue;\n");
 		printf("'4' - Save the queue to a file;\n");
 		printf("'5' - Add a value to an existing queue;\n");
-		printf("'6' - Dequeue the heading element;\n");
+		printf("'6' - Dequeue element;\n");
 		printf("'7' - Search;\n");
 		printf("'8' - Sort;\n");
+		printf("'9' - Reverse the queue;\n");
+		printf("'10' - Make the queue to be a priority queue;\n");
 		printf("'-1' - Clear the terminal;\n");
 		printf("'0' - Quit without saving (the memory will be automatically deallocated)\n");
 
@@ -51,22 +57,29 @@ int main() {
 			case 2: printQueue(q.head, q.tail, q.len); break;
 			case 3:
 				deallocateMemory(q.head, q.tail, q.len);
-				q.head = NULL; q.tail = NULL; q.len = 0;
+				q.head = NULL; q.tail = NULL; 
+				q.len = 0; q.pQ = false;
 				break;
 			case 4: saveToFile(q.head, q.tail, q.len); break;
 			case 5: q.len = enq(&q.tail, q.len); break;
 			case 6: if(q.len == 1) {
 					deallocateMemory(q.head, q.tail, q.len);
-	                                q.head = NULL; q.tail = NULL; q.len = 0;
+	                                q.head = NULL; q.tail = NULL; 
+					q.len = 0; q.pQ = false;
 					printf("The queue consisted of only one element, so it was completely destroyed!\n");
-				} else {
+				} else if (!q.pQ){
 					q.len = deq(q.tail, &q.head, q.len);
+				} else {
+					// Functionality for PQ handling
 				}
 				break;
 			case 7: search(q.head, q.tail, q.len); break;
-			case 8: sort(q.tail, q.len); break;
+			case 8: q.len = enq(&q.tail, q.len); break;
+			case 9: reverse(q.tail, q.len); break;
+			case 10: q.pQ = true; break;
 			case 0: deallocateMemory(q.head, q.tail, q.len);
-                                q.head = NULL; q.tail = NULL; q.len = 0;
+                                q.head = NULL; q.tail = NULL; 
+				q.len = 0; q.pQ = false;
                                 return 0;
 			default: printf("This option is probably not in the list ...\n"); break;
 		}
@@ -422,3 +435,38 @@ int sort(Node *t, int n) {
 			printf("This option is probably not in the list ...\n"); return 0;
 	}
 };
+
+int reverse(Node *t, int n) {
+	if(n == 0) {
+		printf("ABORT: Queue is empty!\n"); return 0;
+	} else if(n == 1) {
+		printf("ABORT: Queue contains only one element - the operation won't change anything!\n");
+		return 0;
+	}
+
+	Node *rearNode, *frontNode;
+	int res;
+	int frontI, rearI;
+	frontI = n - 1; rearI = 0;
+
+	while(rearI < frontI) {
+		rearNode = t; frontNode = t;
+
+		for(int i = 0; i < rearI; i++) {
+			rearNode = rearNode->next;
+		}
+
+		for(int i = 0; i < frontI; i++) {
+			frontNode = frontNode->next;
+		}
+
+		res = rearNode->content; 
+		rearNode->content = frontNode->content; 
+		frontNode->content = res;
+
+		rearI++; frontI--;
+	}
+
+	return 0;
+};
+
