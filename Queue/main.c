@@ -10,6 +10,7 @@ typedef struct Node  {
 
 typedef struct Queue {
 	bool pQ;
+	// bool cQ;
 	Node *head, *tail;
 	int len;
 } Queue;
@@ -27,8 +28,12 @@ int serveElementWithHPriority();
 
 int main() {
 	int option;
+	int val;
+	int c;
+	int prevVal;
 	Queue q;
-	q.head = NULL; q.tail = NULL; q.len = 0; q.pQ = false;
+	q.head = NULL; q.tail = NULL; q.len = 0;
+	q.pQ = false; // q.cQ = false;
 
 
 	while(1) {
@@ -57,28 +62,70 @@ int main() {
 			case 2: printQueue(q.head, q.tail, q.len); break;
 			case 3:
 				deallocateMemory(q.head, q.tail, q.len);
-				q.head = NULL; q.tail = NULL; 
+				q.head = NULL; q.tail = NULL;
 				q.len = 0; q.pQ = false;
 				break;
-			case 4: saveToFile(q.head, q.tail, q.len); break;
-			case 5: q.len = enq(&q.tail, q.len); break;
+			case 4: saveToFile(q.head, q.tail, q.len);
+			case 5: q.len = enq(&q.tail, q.len);
+				if(q.pQ) { sort(q.tail, q.len, 2); }
+				break;
 			case 6: if(q.len == 1) {
 					deallocateMemory(q.head, q.tail, q.len);
-	                                q.head = NULL; q.tail = NULL; 
+	                                q.head = NULL; q.tail = NULL;
 					q.len = 0; q.pQ = false;
+
 					printf("The queue consisted of only one element, so it was completely destroyed!\n");
 				} else if (!q.pQ){
-					q.len = deq(q.tail, &q.head, q.len);
+					val = q.head->content;
+					q.len = deq(q.tail, &q.head, q.len); q.head->next = NULL;
+
+					printf("Heading element with value: %i - was successfully dequeued!\n", val);
 				} else {
-					// Functionality for PQ handling
+					val = q.head->content;
+					c = 0; prevVal = val;
+
+					while(q.head->content == prevVal) {
+						prevVal = q.head->content;
+
+						c++;
+						q.len = deq(q.tail, &q.head, q.len); q.head->next = NULL;
+					}
+
+					printf("%i element/-s with highest priority - %i was/were served ...\n", c, val);
 				}
 				break;
 			case 7: search(q.head, q.tail, q.len); break;
-			case 8: q.len = enq(&q.tail, q.len); break;
-			case 9: reverse(q.tail, q.len); break;
-			case 10: q.pQ = true; break;
+			case 8:
+				if(q.pQ) {
+					printf("This operation may not be performed on a priority queue!\n");
+					break;
+				}
+
+				printf("'1' - ASC;\n");
+        			printf("'2' - DESC;\n");
+        			printf("'0' - Abort this operation\n");
+
+        			printf("OPTION: ");
+        			scanf("%i", &option);
+
+				if(option == 0) {
+					break;
+				} else if((option == 1) || (option == 2)) {
+					sort(q.tail, q.len, option); break;
+				} else { break; }
+			case 9:
+				if(q.pQ) {
+                                        printf("This operation may not be performed on a priority queue!\n");
+                                        break;
+                                }
+
+				reverse(q.tail, q.len); break;
+			case 10:
+				q.pQ = true;
+				if(q.pQ) { sort(q.tail, q.len, 2); }
+				break;
 			case 0: deallocateMemory(q.head, q.tail, q.len);
-                                q.head = NULL; q.tail = NULL; 
+                                q.head = NULL; q.tail = NULL;
 				q.len = 0; q.pQ = false;
                                 return 0;
 			default: printf("This option is probably not in the list ...\n"); break;
@@ -287,7 +334,7 @@ int enq(Node **t, int n) {
 
 int deq(Node *t, Node **h, int n) {
 	if(n <= 0) {
-                printf("ABORT: First of all you have to create a new queue!\n");
+                printf("ABORT: Queue is empty!\n");
                 return 0;
         }
 
@@ -317,10 +364,11 @@ int search(Node *h, Node *t, int n) {
 	Node *currentNode;
 	currentNode = t;
 
-	int opt = 0;
 	int index = 0;
 	int indexes[n]; int indLen = 0;
 	int val = 0;
+
+	int opt;
 
 	printf("'1' - Find a value by index;\n");
 	printf("'2' - Find indexes by value;\n");
@@ -367,7 +415,7 @@ int search(Node *h, Node *t, int n) {
 				printf("We've found %i elements with this value on these positions (from 0 to n-1, from HEAD to TAIL):\n", indLen);
 
 				for(int i = 0; i < indLen; i++) {
-					printf("%i ", indLen-1 - (indLen-1 - indexes[i]));
+					printf("%i ", n-1 - indexes[i]);
 				}
 
 				printf("\n");
@@ -380,22 +428,14 @@ int search(Node *h, Node *t, int n) {
 	}
 };
 
-int sort(Node *t, int n) {
+int sort(Node *t, int n, int opt) {
 	if(n <= 0) {
                 printf("ABORT: Queue is empty!\n");
                 return 0;
         }
 
-	int opt;
 	int res;
 	Node *currentNode;
-
-	printf("'1' - ASC;\n");
-	printf("'2' - DESC;\n");
-	printf("'0' - Abort this operation\n");
-
-	printf("OPTION: ");
-	scanf("%i", &opt);
 
 	switch(opt) {
 		case 1:
@@ -403,10 +443,10 @@ int sort(Node *t, int n) {
 				currentNode = t;
 
 				for(int j = 0; j < n-i-1; j++) {
-					if(currentNode->content <= currentNode->next->content) {
-						res = currentNode->content;
-						currentNode->content = currentNode->next->content;
-						currentNode->next->content = res;
+					if(currentNode->content < currentNode->next->content) {
+						res = currentNode->content + 0;
+						currentNode->content = currentNode->next->content + 0;
+						currentNode->next->content = res + 0;
 					}
 
 					currentNode = currentNode->next;
@@ -419,10 +459,10 @@ int sort(Node *t, int n) {
 				currentNode = t;
 
                                 for(int j = 0; j < n-i-1; j++) {
-                                        if(currentNode->content >= currentNode->next->content) { 
-                                                res = currentNode->content;
-                                                currentNode->content = currentNode->next->content;
-                                                currentNode->next->content = res;
+                                        if(currentNode->content > currentNode->next->content) {
+                                                res = currentNode->content + 0;
+                                                currentNode->content = currentNode->next->content + 0;
+                                                currentNode->next->content = res + 0;
                                         }
 
 					currentNode = currentNode->next;
@@ -460,8 +500,8 @@ int reverse(Node *t, int n) {
 			frontNode = frontNode->next;
 		}
 
-		res = rearNode->content; 
-		rearNode->content = frontNode->content; 
+		res = rearNode->content;
+		rearNode->content = frontNode->content;
 		frontNode->content = res;
 
 		rearI++; frontI--;
@@ -469,4 +509,3 @@ int reverse(Node *t, int n) {
 
 	return 0;
 };
-
