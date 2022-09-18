@@ -10,7 +10,7 @@ typedef struct Node  {
 
 typedef struct Queue {
 	bool pQ;
-	// bool cQ;
+	bool cQ;
 	Node *head, *tail;
 	int len;
 } Queue;
@@ -25,6 +25,7 @@ int search();
 int sort();
 int reverse();
 int serveElementWithHPriority();
+int fixCircQ();
 
 int main() {
 	int option;
@@ -33,7 +34,7 @@ int main() {
 	int prevVal;
 	Queue q;
 	q.head = NULL; q.tail = NULL; q.len = 0;
-	q.pQ = false; // q.cQ = false;
+	q.pQ = false; q.cQ = false;
 
 
 	while(1) {
@@ -50,6 +51,8 @@ int main() {
 		printf("'8' - Sort;\n");
 		printf("'9' - Reverse the queue;\n");
 		printf("'10' - Make the queue to be a priority queue;\n");
+		printf("'11' - Make the queue to be a circular queue;\n");
+		printf("'12' - Remove specification flags;\n");
 		printf("'-1' - Clear the terminal;\n");
 		printf("'0' - Quit without saving (the memory will be automatically deallocated)\n");
 
@@ -68,18 +71,19 @@ int main() {
 			case 4: saveToFile(q.head, q.tail, q.len);
 			case 5: q.len = enq(&q.tail, q.len);
 				if(q.pQ) { sort(q.tail, q.len, 2); }
+				if(q.cQ) { fixCircQ(q.head, q.tail, q.len); }
 				break;
 			case 6: if(q.len == 1) {
 					deallocateMemory(q.head, q.tail, q.len);
 	                                q.head = NULL; q.tail = NULL;
 					q.len = 0; q.pQ = false;
 
-					printf("The queue consisted of only one element, so it was completely destroyed!\n");
+					printf("SUCCESS: The queue consisted of only one element, so it was completely destroyed!\n");
 				} else if (!q.pQ){
 					val = q.head->content;
 					q.len = deq(q.tail, &q.head, q.len); q.head->next = NULL;
 
-					printf("Heading element with value: %i - was successfully dequeued!\n", val);
+					printf("SUCCESS: Heading element with value: %i - was successfully dequeued!\n", val);
 				} else {
 					val = q.head->content;
 					c = 0; prevVal = val;
@@ -91,13 +95,15 @@ int main() {
 						q.len = deq(q.tail, &q.head, q.len); q.head->next = NULL;
 					}
 
-					printf("%i element/-s with highest priority - %i was/were served ...\n", c, val);
+					printf("SUCCESS: %i element/-s with highest priority - %i was/were served ...\n", c, val);
 				}
+
+				if(q.cQ) { fixCircQ(q.head, q.tail, q.len); }
 				break;
 			case 7: search(q.head, q.tail, q.len); break;
 			case 8:
 				if(q.pQ) {
-					printf("This operation may not be performed on a priority queue!\n");
+					printf("ABORT: This operation may not be performed on a priority queue!\n");
 					break;
 				}
 
@@ -115,7 +121,7 @@ int main() {
 				} else { break; }
 			case 9:
 				if(q.pQ) {
-                                        printf("This operation may not be performed on a priority queue!\n");
+                                        printf("ABORT: This operation may not be performed on a priority queue!\n");
                                         break;
                                 }
 
@@ -124,11 +130,54 @@ int main() {
 				q.pQ = true;
 				if(q.pQ) { sort(q.tail, q.len, 2); }
 				break;
+			case 11:
+				q.cQ = true;
+				fixCircQ(q.head, q.tail, q.len);
+				break;
+			case 12:
+				if(q.len == 0) {
+					printf("ABORT: Queue is empty and don't have any specification flags!");
+					break;
+				}
+
+				printf("Specification flags:\n");
+				printf("Priority queue - %b,\n", q.pQ);
+				printf("Circular queue - %b\n", q.cQ);
+
+				printf("--------------------\n");
+
+				if(q.pQ) { printf("'1' - Remove the priority queue flag;\n"); }
+				if(q.cQ) { printf("'2' - Remove the circular queue flag;\n"); }
+				printf("'0' - Abort this operation\n");
+
+				printf("OPTION: ");
+			        scanf("%i", &option);
+
+				switch(option) {
+					case 1:
+						if(!q.pQ) {
+							printf("ABORT: Unable to perform this operation on this queue :(\n");
+						} else {
+							q.pQ = false;
+						}
+						break;
+					case 2:
+						if(!q.cQ) {
+                                                        printf("ABORT: Unable to perform this operation on this queue :(\n");
+                                                } else {
+                                                        q.cQ = false;
+							q.head->next = NULL;
+                                                }
+                                                break;
+					case 0: break;
+					default: printf("ERROR: This option is probably not in the list ...\n"); break;
+				}
+				break;
 			case 0: deallocateMemory(q.head, q.tail, q.len);
                                 q.head = NULL; q.tail = NULL;
 				q.len = 0; q.pQ = false;
                                 return 0;
-			default: printf("This option is probably not in the list ...\n"); break;
+			default: printf("ERROR: This option is probably not in the list ...\n"); break;
 		}
 	}
 };
@@ -225,7 +274,7 @@ int input(Node **h, Node **t, int l) {
 };
 
 int printQueue(Node *h, Node *t, int n) {
-	if(n <= 0) {
+	if(n == 0) {
 		printf("ABORT: Queue is empty - unable to print!\n");
 		return 0;
 	}
@@ -247,7 +296,7 @@ int printQueue(Node *h, Node *t, int n) {
 };
 
 int deallocateMemory(Node *h, Node *t, int n) {
-	if(n <= 0) {
+	if(n == 0) {
                 printf("ABORT: Queue is empty - unable to deallocate memory!\n");
                 return 0;
         }
@@ -266,7 +315,7 @@ int deallocateMemory(Node *h, Node *t, int n) {
 
 
 int saveToFile(Node *h, Node *t, int n) {
-	if(n <= 0) {
+	if(n == 0) {
 		printf("ABORT: Queue is empty - unable to save it in a file!\n");
 		return 0;
 	}
@@ -309,7 +358,7 @@ int saveToFile(Node *h, Node *t, int n) {
 };
 
 int enq(Node **t, int n) {
-	if(n <= 0) {
+	if(n == 0) {
 		printf("ABORT: First of all you have to create a new queue!\n");
 		return 0;
 	}
@@ -333,7 +382,7 @@ int enq(Node **t, int n) {
 };
 
 int deq(Node *t, Node **h, int n) {
-	if(n <= 0) {
+	if(n == 0) {
                 printf("ABORT: Queue is empty!\n");
                 return 0;
         }
@@ -356,7 +405,7 @@ int deq(Node *t, Node **h, int n) {
 };
 
 int search(Node *h, Node *t, int n) {
-	if(n <= 0) {
+	if(n == 0) {
                 printf("ABORT: Queue is empty!\n");
                 return 0;
         }
@@ -429,7 +478,7 @@ int search(Node *h, Node *t, int n) {
 };
 
 int sort(Node *t, int n, int opt) {
-	if(n <= 0) {
+	if(n == 0) {
                 printf("ABORT: Queue is empty!\n");
                 return 0;
         }
@@ -508,4 +557,17 @@ int reverse(Node *t, int n) {
 	}
 
 	return 0;
+};
+
+int fixCircQ(Node *h, Node *t, int n) {
+	if(n == 0) {
+		printf("ABORT: Queue is empty!\n"); return 0;
+	} else if(n == 1) {
+		h->next = t;
+		t->next = h;
+
+		return 0;
+	} else {
+		h->next = t; return 0;
+	}
 };
