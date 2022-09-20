@@ -28,7 +28,7 @@ int serveElementWithHPriority();
 int fixCircQ();
 
 int main() {
-	int option;
+	char option[256];
 	int val;
 	int c;
 	int prevVal;
@@ -54,12 +54,17 @@ int main() {
 		printf("'11' - Make the queue to be a circular queue;\n");
 		printf("'12' - Remove specification flags;\n");
 		printf("'-1' - Clear the terminal;\n");
-		printf("'0' - Quit without saving (the memory will be automatically deallocated)\n");
+		printf("'-2' - Quit without saving (the memory will be automatically deallocated)\n");
 
 		printf("OPTION: ");
-		scanf("%i", &option);
+		scanf("%s", &option);
 
-		switch(option) {
+		if(!atoi(option)) {
+			printf("ERROR: Incorrect input!\n");
+			continue;
+		}
+
+		switch(atoi(option)) {
 			case -1: system("clear"); break;
 			case 1: q.len = input(&q.head, &q.tail, q.len); break;
 			case 2: printQueue(q.head, q.tail, q.len); break;
@@ -109,15 +114,20 @@ int main() {
 
 				printf("'1' - ASC;\n");
         			printf("'2' - DESC;\n");
-        			printf("'0' - Abort this operation\n");
+        			printf("'-1' - Abort this operation\n");
 
         			printf("OPTION: ");
-        			scanf("%i", &option);
+        			scanf("%s", &option);
 
-				if(option == 0) {
+				if(!atoi(option)) {
+		                        printf("ERROR: Incorrect input!\n");
+                		        break;
+                		}
+
+				if(atoi(option) == -1) {
 					break;
-				} else if((option == 1) || (option == 2)) {
-					sort(q.tail, q.len, option); break;
+				} else if((atoi(option) == 1) || (atoi(option) == 2)) {
+					sort(q.tail, q.len, atoi(option)); break;
 				} else { break; }
 			case 9:
 				if(q.pQ) {
@@ -136,7 +146,7 @@ int main() {
 				break;
 			case 12:
 				if(q.len == 0) {
-					printf("ABORT: Queue is empty and don't have any specification flags!");
+					printf("ABORT: Queue is empty and don't have any specification flags!\n");
 					break;
 				}
 
@@ -148,12 +158,17 @@ int main() {
 
 				if(q.pQ) { printf("'1' - Remove the priority queue flag;\n"); }
 				if(q.cQ) { printf("'2' - Remove the circular queue flag;\n"); }
-				printf("'0' - Abort this operation\n");
+				printf("'-1' - Abort this operation\n");
 
 				printf("OPTION: ");
-			        scanf("%i", &option);
+			        scanf("%s", &option);
 
-				switch(option) {
+				if(!atoi(option)) {
+		                        printf("ERROR: Incorrect input!\n");
+                		        break;
+                		}
+
+				switch(atoi(option)) {
 					case 1:
 						if(!q.pQ) {
 							printf("ABORT: Unable to perform this operation on this queue :(\n");
@@ -169,11 +184,11 @@ int main() {
 							q.head->next = NULL;
                                                 }
                                                 break;
-					case 0: break;
+					case -1: break;
 					default: printf("ERROR: This option is probably not in the list ...\n"); break;
 				}
 				break;
-			case 0: deallocateMemory(q.head, q.tail, q.len);
+			case -2: deallocateMemory(q.head, q.tail, q.len);
                                 q.head = NULL; q.tail = NULL;
 				q.len = 0; q.pQ = false;
                                 return 0;
@@ -188,7 +203,7 @@ int input(Node **h, Node **t, int l) {
 		return l;
 	}
 
-	int option = 0; int n = 0;
+	char option[256]; int n = 0;
 	Node *newNode;
 
 	printf("'1' - Manual input;\n");
@@ -196,9 +211,14 @@ int input(Node **h, Node **t, int l) {
         printf("? - ");
 
 	printf("OPTION: ");
-        scanf("%i", &option);
+        scanf("%s", &option);
 
-        if(option == 1) {
+	if(!atoi(option)) {
+        	printf("ERROR: Incorrect input!\n");
+                return l;
+        }
+
+        if(atoi(option) == 1) {
 		char input[256];
 
                 while(1) {
@@ -207,7 +227,7 @@ int input(Node **h, Node **t, int l) {
 
                         if(!strcmp(input, "S")) {
 				return n;
-                        } else {
+                        } else if(atoi(input)){
                                 if(n == 0) {
                                         newNode = (Node*)malloc(sizeof(Node));
                                         newNode->content = atoi(input);
@@ -417,16 +437,21 @@ int search(Node *h, Node *t, int n) {
 	int indexes[n]; int indLen = 0;
 	int val = 0;
 
-	int opt;
+	char opt[256];
 
 	printf("'1' - Find a value by index;\n");
 	printf("'2' - Find indexes by value;\n");
-	printf("'0' - Abort this operation\n");
+	printf("'-1' - Abort this operation\n");
 
 	printf("OPTION: ");
-	scanf("%i", &opt);
+	scanf("%s", &opt);
 
-	switch(opt) {
+	if(!atoi(opt)) {
+        	printf("ERROR: Incorrect input!\n");
+               	return 0;
+        }
+
+	switch(atoi(opt)) {
 		case 1:
 			printf("Enter the index (from 0 to n-1, from HEAD to TAIL): ");
 			scanf("%i", &index);
@@ -470,7 +495,7 @@ int search(Node *h, Node *t, int n) {
 				printf("\n");
 				return 0;
 			}
-		case 0:
+		case -1:
 			return 0;
 		default:
 			printf("This option is probably not in the list ...\n"); return 0;
